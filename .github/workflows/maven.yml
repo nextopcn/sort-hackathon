@@ -8,9 +8,6 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: [ '17' ]
     name: Build
     steps:
       - uses: actions/checkout@v3
@@ -22,13 +19,4 @@ jobs:
           check-latest: false
       - name: Compile
         run: mvn clean package -P CI --batch-mode --quiet
-      - name: Setup JDK ${{ matrix.java }} for running
-        uses: actions/setup-java@v3
-        with:
-          java-version: ${{ matrix.java }}
-          distribution: 'adopt'
-          check-latest: false
-      - name: Version
-        run: java -version
-      - name: Test
-        run: mvn test
+    
