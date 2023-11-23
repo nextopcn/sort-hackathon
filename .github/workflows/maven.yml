@@ -19,4 +19,6 @@ jobs:
           check-latest: false
       - name: Compile
         run: mvn clean package -P CI --batch-mode --quiet
+      - name: Benchmark
+        run: mvn compile exec:java
     
