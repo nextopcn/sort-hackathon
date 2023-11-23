@@ -1,7 +1,7 @@
 package cn.nextop;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 /**
  * @author Baoyi Chen
