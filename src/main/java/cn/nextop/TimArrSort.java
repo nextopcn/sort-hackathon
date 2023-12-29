@@ -27,8 +27,7 @@ public class TimArrSort<T> {
     private static final int INITIAL_TMP_LENGTH = 256;
 
     private TimArrSort(List<T[]> a, Comparator<? super T> c) {
-        this.a = a; this.c = c; this.lens = new int[a.size()]; /* init */
-        int i = 0; for (T[] t : a) { length += t.length; lens[i++] = length; }
+        this.a = a; this.c = c; this.lens = new int[a.size()]; this.init();
         /* Allocate temp storage (which may be increased later if necessary) */
         int l = INITIAL_TMP_LENGTH; int t = (length < 2 * l) ? length >>> 1 : l;
         this.tmp = (T[]) newInstance(a.get(0).getClass().getComponentType(), t);
@@ -36,13 +35,21 @@ public class TimArrSort<T> {
         this.tmpLen = t; this.runBase = new int[sl]; runLen = new int[sl]; /* run! */
     }
 
+    private void init() {
+        int i = 0; for (T[] t : a) {
+            final int l = t.length;
+            length += l; lens[i++] = length;
+            if(l == 0) this.hasEmpty = true;
+        } if (this.hasEmpty) this.initLoc();
+    }
+
     /**
      * Sorts the given range
      */
     public static <T> void sort(List<T[]> a, Comparator<? super T> c) {
-        final TimArrSort<T> ts = new TimArrSort<>(a, c);
-        int base = 0; for (T[] t : a) { int l = t.length;
-            if(l == 0) { ts.hasEmpty = true;  continue; }
+        var ts = new TimArrSort(a, c);
+        int base = 0; for (T[] t : a) {
+            int l = t.length; if (l == 0) continue;
             int rl = countRunAndMakeAscending(t, 0, l, c);
             if (rl < l) { binarySort(t, 0, l, rl, c); rl = l; }
             ts.pushRun(base, rl); ts.mergeCollapse(); base += rl;
@@ -256,11 +263,7 @@ public class TimArrSort<T> {
     }
 
     private void set(T s) { /* for write */
-        if(hasEmpty) { /* contains empty array */
-            int rs = this.lens.length - 1;/* last row */
-            while (row2 < rs && lens[row2] == 0) row2++;
-            if (row2 == rs && this.lens[row2] == 0) return;
-        } this.a.get(row2)[col2] = s; /* set current value */
+        this.a.get(row2)[col2] = s;
     }
 
     private void prev(int n) { /* for read */
@@ -297,6 +300,19 @@ public class TimArrSort<T> {
             while (i >= lens[row2]);
             col2 = i - lens[row2 - 1];
         } else col2 += n;  index2 = i;
+    }
+
+    private void initLoc() {
+        this.skipEmpty();
+        this.row2 = row3 = row;
+        this.col2 = col3 = col;
+        index2 = index3 = index;
+    }
+
+    private void skipEmpty() { /* skip */
+        int rs = lens.length - 1;/* last row */
+        while (row < rs && lens[row] == 0) row++;
+        assert !(row == rs && this.lens[row] == 0);
     }
 
     private void locate(int i) { /* for read */
