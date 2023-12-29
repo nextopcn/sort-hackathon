@@ -47,7 +47,9 @@ public class TimArrSort<T> {
      * Sorts the given range
      */
     public static <T> void sort(List<T[]> a, Comparator<? super T> c) {
-        if(a.size() == 0) return;
+        if(a == null || a.size() == 0) return;
+
+        //
         var ts = new TimArrSort(a, c);
         int base = 0; for (T[] t : a) {
             int l = t.length; if (l == 0) continue;
