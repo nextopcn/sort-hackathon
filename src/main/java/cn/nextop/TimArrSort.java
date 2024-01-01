@@ -261,7 +261,6 @@ public class TimArrSort<T> {
 
     private void prev(int n) { /* for read */
         int[] l = this.lens; int i = index - n;
-        if (hitCache(i)) return;/* cache hit */
         if (this.row > 0) if (i < l[row - 1]) {
             do { this.row--; } /* change row */
             while ( row > 0 && i < l[row - 1] );
@@ -280,7 +279,6 @@ public class TimArrSort<T> {
 
     private void next(int n) { /* for read */
         int i = this.index + n;
-        if (hitCache(i)) return;
         if (i >= this.lens[row]) {
             do { this.row++; }/*!*/
             while (i >= lens[row]);
@@ -311,6 +309,7 @@ public class TimArrSort<T> {
 
     private void locate(int i) { /* for read */
         if (i == index) return;
+        if (hitCache(i)) return;
         int n = abs(i - this.index);
         final boolean b = i > index;
         if (b) next(n); else prev(n);
