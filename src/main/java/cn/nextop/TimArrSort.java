@@ -170,19 +170,17 @@ public class TimArrSort<T> {
     private void mergeLo(int base1, int len1, int base2, int len2) {
         T[] tmp = ensureCapacity(len1);
         this.copy(base1, tmp, 0, len1);
+        locate2(base1); int cursor1 = 0;
         var c = this.c; /* performance */
+        locate(base2); int len = base2 + len2;
 
         //
-        locate2(base1);
-        int cursor1 = 0;
-        int cursor2 = base2;
-        int len = base2 + len2;
-        while (len1 > 0 && len2 > 0) {
-            T t1 = tmp[cursor1], t2 = get(cursor2);
-            if(c.compare(t1, t2) < 0) {/* t1 win */
-                set(t1); cursor1++; len1--;
+        while (true) {
+            T t1 = tmp[cursor1], t2 = get();
+            if (c.compare(t1, t2) < 0) {/* t1 win */
+                set(t1); if (--len1 == 0) break; cursor1++;
             } else {
-                set(t2); cursor2++; len2--;
+                set(t2); if(--len2 == 0) break; next(1);
             }
             next2(1);
         }
@@ -192,19 +190,16 @@ public class TimArrSort<T> {
     private void mergeHi(int base1, int len1, int base2, int len2) {
         T[] tmp = ensureCapacity(len2);
         this.copy(base2, tmp, 0, len2);
-        var c = this.c; /* performance */
-        int len = base2 + len2, cursor = len - 1;
+        var c = this.c; int cursor2 = len2 - 1;
+        locate(base2 - 1); locate2(base2 + len2 - 1);
 
         //
-        locate2(cursor);
-        int cursor2 = len2 - 1;
-        int cursor1 = base2 - 1;
-        while (len1 > 0 && len2 > 0) {
-            T t1 = get(cursor1), t2 = tmp[cursor2];
-            if(c.compare(t1, t2) > 0) {/* t1 win */
-                set(t1); cursor1--; len1--;
+        while (true) {
+            T t1 = get(), t2 = tmp[cursor2];
+            if (c.compare(t1, t2) > 0) {/* t1 win */
+                set(t1); if (--len1 == 0) break; prev(1);
             } else {
-                set(t2); cursor2--; len2--;
+                set(t2); if (--len2 == 0) break; cursor2--;
             }
             prev2(1);
         } if(len2 > 0) this.copy(tmp, 0, base1, len2);
@@ -260,11 +255,6 @@ public class TimArrSort<T> {
         return a.get(row)[col];
     }
 
-    private T get(int i) { /* for read */
-        if (i != index) locate(i);
-        return get(); /* current */
-    }
-
     private void set(T s) { /* for write */
         this.a.get(row2)[col2] = s;
     }
@@ -288,9 +278,9 @@ public class TimArrSort<T> {
     }
 
     private void next(int n) { /* for read */
-        int i = index + n;
-        if (i >= lens[row]) {
-            do { this.row++; }
+        int i = this.index + n;
+        if (i >= this.lens[row]) {
+            do { this.row++; }/*!*/
             while (i >= lens[row]);
             col = i - lens[row - 1];
         } else col += n;  index = i;
@@ -319,8 +309,7 @@ public class TimArrSort<T> {
 
     private void locate(int i) { /* for read */
         if (i == index) return;
-        if (hasCache(i)) return;
-        updateCache();/* cache */
+        if (hitCache(i)) return;
         int n = abs(i - this.index);
         final boolean b = i > index;
         if (b) next(n); else prev(n);
@@ -336,14 +325,10 @@ public class TimArrSort<T> {
     /**
      *
      */
-    private boolean hasCache(int i) {
-        if(index3 != i) return false;
-        this.index = i; this.row = row3;
-        this.col = this.col3; return true;
-    }
-
-    private void updateCache() {
-        row3 = row; col3 = col;
-        this.index3 = this.index;
+    private boolean hitCache(int i) {
+        if(this.index3 != i) return false;
+        index = i; col = col3; row = row3;
+        this.row3 = row;  this.col3 = col;
+        this.index3 = index;  return true;
     }
 }
